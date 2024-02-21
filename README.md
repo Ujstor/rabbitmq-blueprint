@@ -1,6 +1,23 @@
 # Project rabbitmq-blueprint
 
-One Paragraph of project description goes here
+Concept for implementing RabbitMQ in the go-blueprint as an advanced flag.
+
+
+Publisher
+```bash
+curl -X POST -d 'message=test' localhost:8088/publish
+```
+
+Consumer
+```bash
+docker logs -f consumer-1
+```
+
+RannitMQ UI
+```bash
+localhost:15672
+```
+
 
 ## Getting Started
 
@@ -23,12 +40,12 @@ run the application
 make run
 ```
 
-Create DB container
+Create containers
 ```bash
 make docker-run
 ```
 
-Shutdown DB container
+Shutdown containers
 ```bash
 make docker-down
 ```

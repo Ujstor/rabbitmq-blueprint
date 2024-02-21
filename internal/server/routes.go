@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"github.com/a-h/templ"
 	"log"
+	"fmt"
 	"net/http"
 	"rabbitmq-blueprint/cmd/web"
+	"rabbitmq-blueprint/internal/rabbitmq"
 )
 
 func (s *Server) RegisterRoutes() http.Handler {
@@ -14,6 +16,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	mux.HandleFunc("/", s.HelloWorldHandler)
 
 	mux.HandleFunc("/health", s.healthHandler)
+	mux.HandleFunc("/publish", s.publishHandler)
 
 	fileServer := http.FileServer(http.FS(web.Files))
 	mux.Handle("/js/", fileServer)
@@ -43,4 +46,25 @@ func (s *Server) healthHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	_, _ = w.Write(jsonResp)
+}
+
+func (s *Server) publishHandler(w http.ResponseWriter, r *http.Request) {
+    if r.Method != http.MethodPost {
+        http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+        return
+    }
+
+    message := r.FormValue("message")
+    if message == "" {
+        http.Error(w, "Message cannot be empty", http.StatusBadRequest)
+        return
+    }
+
+    err := publisher.SubmitMessage(message)
+    if err != nil {
+        http.Error(w, fmt.Sprintf("Failed to publish message: %v", err), http.StatusInternalServerError)
+        return
+    }
+
+    fmt.Fprintf(w, "Message '%s' published successfully", message)
 }

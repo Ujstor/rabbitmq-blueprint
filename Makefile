@@ -23,11 +23,11 @@ docker-run:
 
 # Shutdown DB container
 docker-down:
-	@if docker compose down 2>/dev/null; then \
+	@if docker compose down --volumes 2>/dev/null; then \
 		: ; \
 	else \
 		echo "Falling back to Docker Compose V1"; \
-		docker-compose down; \
+		docker-compose down --volumes \
 	fi
 
 # Test the application
@@ -57,4 +57,4 @@ watch:
 	    fi; \
 	fi
 
-.PHONY: all build run test clean
+.PHONY: all build run test clean watch docker-run docker-down
