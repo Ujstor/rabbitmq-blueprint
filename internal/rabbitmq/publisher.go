@@ -1,7 +1,7 @@
-package publisher
+package rabbitmq
 
 import (
-    "fmt"
+    "log"
     "os"
     "github.com/streadway/amqp"
 	_ "github.com/joho/godotenv/autoload"
@@ -17,13 +17,13 @@ var (
 func SubmitMessage(message string) error {
     conn, err := amqp.Dial("amqp://" + RabbitUser + ":" + RabbitPassword + "@" + RabbitHost + ":" + RabbitPort + "/")
     if err != nil {
-        return fmt.Errorf("failed to connect to RabbitMQ: %v", err)
+        log.Fatalf("failed to connect to RabbitMQ: %v", err)
     }
     defer conn.Close()
 
     ch, err := conn.Channel()
     if err != nil {
-        return fmt.Errorf("failed to open a channel: %v", err)
+        log.Fatalf("failed to open a channel: %v", err)
     }
     defer ch.Close()
 
@@ -36,7 +36,7 @@ func SubmitMessage(message string) error {
         nil,         // arguments
     )
     if err != nil {
-        return fmt.Errorf("failed to declare a queue: %v", err)
+        log.Fatalf("failed to declare a queue: %v", err)
     }
 
     err = ch.Publish(
@@ -49,9 +49,9 @@ func SubmitMessage(message string) error {
             Body:        []byte(message),
         })
     if err != nil {
-        return fmt.Errorf("failed to publish a message: %v", err)
+        log.Fatalf("failed to publish a message: %v", err)
     }
 
-    fmt.Println("Publish success!")
+    log.Println("Publish success!")
     return nil
 }

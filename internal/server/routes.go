@@ -60,7 +60,7 @@ func (s *Server) publishHandler(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    err := publisher.SubmitMessage(message)
+    err := rabbitmq.SubmitMessage(message)
     if err != nil {
         http.Error(w, fmt.Sprintf("Failed to publish message: %v", err), http.StatusInternalServerError)
         return

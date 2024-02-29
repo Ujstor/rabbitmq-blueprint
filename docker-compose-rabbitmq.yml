@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  app:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+    working_dir: /app
+    ports:
+      - ${PORT}:${PORT}
+    depends_on:
+      - rabbit
+    restart: "on-failure"
+    networks:
+      - blueprint
+
+  rabbit:
+    image: rabbitmq:3.12.13-management
+    container_name: rabbit-1
+    ports:
+      - ${RABBIT_PORT}:5672
+      - ${RABBIT_UI}:15672
+    volumes:
+      - rabbitmq_volume:/var/lib/rabbitmq
+    restart: "on-failure"
+    networks:
+      - blueprint
+
+  consumer:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+      target: runtime-consumer
+    container_name: consumer-1
+    working_dir: /app
+    depends_on:
+      - rabbit
+    networks:
+      - blueprint
+    restart: "on-failure"
+
+volumes:
+  rabbitmq_volume:
+
+networks:
+  blueprint:

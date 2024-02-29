@@ -1,43 +1,6 @@
 version: '3.8'
 
 services:
-  app:
-    build: 
-      context: .
-      dockerfile: Dockerfile
-      target: runtime
-    working_dir: /app
-    ports:
-      - ${PORT}:${PORT}
-    depends_on:
-      - rabbit
-    networks:
-      - blueprint
-
-  rabbit:
-    image: rabbitmq:3.12.13-management
-    container_name: rabbit-1
-    ports:
-      - ${RABBIT_PORT}:5672
-      - ${RABBIT_UI}:15672
-    networks:
-      - blueprint
-    volumes:
-      - rabbitmq_volume:/var/lib/rabbitmq
-
-  consumer:
-    build: 
-      context: ./rabbitMQ-consumer
-      dockerfile: Dockerfile.consumer
-      target: runtime
-    container_name: consumer-1
-    working_dir: /app
-    depends_on:
-      - rabbit
-    networks:
-      - blueprint
-    restart: "on-failure"
-
   psql:
     image: postgres:latest
     environment:
@@ -48,12 +11,6 @@ services:
       - "${DB_PORT}:5432"
     volumes:
       - psql_volume:/var/lib/postgresql/data
-    networks:
-      - blueprint
 
 volumes:
   psql_volume:
-  rabbitmq_volume:
-
-networks:
-  blueprint:

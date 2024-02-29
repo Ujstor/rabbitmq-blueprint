@@ -2,6 +2,11 @@
 
 Concept for implementing RabbitMQ in the go-blueprint as an advanced flag.
 
+```bash
+docker compose -f docker-compose-rabbitmq.yml up --build
+
+docker compose -f docker-compose-rabbitmq.yml down --volumes
+```
 
 Publisher
 ```bash
