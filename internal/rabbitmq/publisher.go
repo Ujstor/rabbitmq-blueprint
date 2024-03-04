@@ -1,9 +1,11 @@
 package rabbitmq
 
 import (
-    "log"
     "os"
     "github.com/streadway/amqp"
+
+	l "rabbitmq-blueprint/internal/logger"
+
 	_ "github.com/joho/godotenv/autoload"
 )
 
@@ -14,16 +16,25 @@ var (
     RabbitPassword = os.Getenv("RABBIT_PASSWORD")
 )
 
-func SubmitMessage(message string) error {
+func connectRabbitMQ() (*amqp.Channel, error) {
     conn, err := amqp.Dial("amqp://" + RabbitUser + ":" + RabbitPassword + "@" + RabbitHost + ":" + RabbitPort + "/")
     if err != nil {
-        log.Fatalf("failed to connect to RabbitMQ: %v", err)
+       l.Log.Errorf("failed to connect to RabbitMQ: %v", err)
     }
-    defer conn.Close()
 
     ch, err := conn.Channel()
     if err != nil {
-        log.Fatalf("failed to open a channel: %v", err)
+        l.Log.Errorf("failed to open a channel: %v", err)
+
+    }
+
+    return ch, nil
+}
+
+func SubmitMessage(message string) error {
+    ch, err := connectRabbitMQ()
+    if err != nil {
+        l.Log.Errorf("failed to connect to RabbitMQ: %v", err)
     }
     defer ch.Close()
 
@@ -36,7 +47,7 @@ func SubmitMessage(message string) error {
         nil,         // arguments
     )
     if err != nil {
-        log.Fatalf("failed to declare a queue: %v", err)
+        l.Log.Errorf("failed to declare a queue: %v", err)
     }
 
     err = ch.Publish(
@@ -49,9 +60,9 @@ func SubmitMessage(message string) error {
             Body:        []byte(message),
         })
     if err != nil {
-        log.Fatalf("failed to publish a message: %v", err)
+        l.Log.Errorf("failed to publish a message: %v", err)
     }
 
-    log.Println("Publish success!")
+    l.Log.Info("Publish success!")
     return nil
 }

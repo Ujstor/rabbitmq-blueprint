@@ -1,8 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"rabbitmq-blueprint/internal/server"
+	l "rabbitmq-blueprint/internal/logger"
 )
 
 func main() {
@@ -11,6 +11,6 @@ func main() {
 
 	err := server.ListenAndServe()
 	if err != nil {
-		panic(fmt.Sprintf("cannot start server: %s", err))
+		l.Log.Fatalf("cannot start server: %s", err)
 	}
 }

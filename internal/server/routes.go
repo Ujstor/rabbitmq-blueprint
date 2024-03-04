@@ -3,11 +3,11 @@ package server
 import (
 	"encoding/json"
 	"github.com/a-h/templ"
-	"log"
 	"fmt"
 	"net/http"
 	"rabbitmq-blueprint/cmd/web"
 	"rabbitmq-blueprint/internal/rabbitmq"
+	l "rabbitmq-blueprint/internal/logger"
 )
 
 func (s *Server) RegisterRoutes() http.Handler {
@@ -32,7 +32,7 @@ func (s *Server) HelloWorldHandler(w http.ResponseWriter, r *http.Request) {
 
 	jsonResp, err := json.Marshal(resp)
 	if err != nil {
-		log.Fatalf("error handling JSON marshal. Err: %v", err)
+		l.Log.Errorf("error handling JSON marshal. Err: %v", err)
 	}
 
 	_, _ = w.Write(jsonResp)
@@ -42,7 +42,7 @@ func (s *Server) healthHandler(w http.ResponseWriter, r *http.Request) {
 	jsonResp, err := json.Marshal(s.db.Health())
 
 	if err != nil {
-		log.Fatalf("error handling JSON marshal. Err: %v", err)
+		l.Log.Errorf("error handling JSON marshal. Err: %v", err)
 	}
 
 	_, _ = w.Write(jsonResp)
@@ -50,19 +50,19 @@ func (s *Server) healthHandler(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) publishHandler(w http.ResponseWriter, r *http.Request) {
     if r.Method != http.MethodPost {
-        http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		l.ClientError(w, http.StatusMethodNotAllowed)
         return
     }
 
     message := r.FormValue("message")
     if message == "" {
-        http.Error(w, "Message cannot be empty", http.StatusBadRequest)
+        l.ClientError(w, http.StatusBadRequest)
         return
     }
 
     err := rabbitmq.SubmitMessage(message)
     if err != nil {
-        http.Error(w, fmt.Sprintf("Failed to publish message: %v", err), http.StatusInternalServerError)
+		l.ServerError(w, err)
         return
     }
 

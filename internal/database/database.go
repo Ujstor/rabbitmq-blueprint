@@ -4,9 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log"
 	"os"
 	"time"
+	
+	l "rabbitmq-blueprint/internal/logger"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 	_ "github.com/joho/godotenv/autoload"
@@ -32,7 +33,7 @@ func New() Service {
 	connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", username, password, host, port, database)
 	db, err := sql.Open("pgx", connStr)
 	if err != nil {
-		log.Fatal(err)
+		l.Log.Errorf("Error connecting to database: %v", err)
 	}
 	s := &service{db: db}
 	return s
@@ -44,7 +45,7 @@ func (s *service) Health() map[string]string {
 
 	err := s.db.PingContext(ctx)
 	if err != nil {
-		log.Fatalf(fmt.Sprintf("db down: %v", err))
+		l.Log.Errorf("db down: %v", err)
 	}
 
 	return map[string]string{

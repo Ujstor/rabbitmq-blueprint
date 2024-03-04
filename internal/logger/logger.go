@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
+	"fmt"
 )
 
 type Logger struct {
@@ -19,7 +20,6 @@ type LoggerConfig struct {
 	AddSource  bool
 }
 
-
 // NewLogger creates a new Logger instance with the provided configuration.
 // It supports two types of loggers: "json" and "text" (passed as the LoggerType).
 // The function initializes a context (which is used internally only), sets up a handler based on the logger type,
@@ -28,7 +28,7 @@ type LoggerConfig struct {
 // If the configuration specifies to add source information to log messages,
 // the source file name will be extracted and only the base name will be used.
 // The function returns an error if an unsupported logger type is specified.
-func NewLogger(config LoggerConfig) (*Logger, error) {
+func New(config LoggerConfig) (*Logger, error) {
 	ctx := context.Background()
 	var handler slog.Handler
 	replaceAttr := func(groups []string, a slog.Attr) slog.Attr {
@@ -75,16 +75,46 @@ func (l *Logger) Info(msg string, attrs ...slog.Attr) {
 	l.innerLogger.LogAttrs(l.context, slog.LevelInfo, msg, attrs...)
 }
 
+func (l *Logger) Infof(format string, args ...interface{}) {
+	msg := fmt.Sprintf(format, args...)
+	l.Info(msg)
+}
+
 func (l *Logger) Error(msg string, attrs ...slog.Attr) {
 	l.innerLogger.LogAttrs(l.context, slog.LevelError, msg, attrs...)
+}
+
+func (l *Logger) Errorf(format string, args ...interface{}) {
+	msg := fmt.Sprintf(format, args...)
+	l.Error(msg)
 }
 
 func (l *Logger) Debug(msg string, attrs ...slog.Attr) {
 	l.innerLogger.LogAttrs(l.context, slog.LevelDebug, msg, attrs...)
 }
 
+func (l *Logger) Debugf(format string, args ...interface{}) {
+	msg := fmt.Sprintf(format, args...)
+	l.Debug(msg)
+}
+
 func (l *Logger) Warn(msg string, attrs ...slog.Attr) {
 	l.innerLogger.LogAttrs(l.context, slog.LevelWarn, msg, attrs...)
+}
+
+func (l *Logger) Warnf(format string, args ...interface{}) {
+	msg := fmt.Sprintf(format, args...)
+	l.Warn(msg)
+}
+
+func (l *Logger) Fatal(msg string, attrs ...slog.Attr) {
+	l.innerLogger.LogAttrs(l.context, slog.LevelError, msg, attrs...)
+	os.Exit(1)
+}
+
+func (l *Logger) Fatalf(format string, args ...interface{}) {
+	msg := fmt.Sprintf(format, args...)
+	l.Fatal(msg)
 }
 
 // Add more methods as needed
